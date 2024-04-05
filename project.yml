@@ -1,0 +1,36 @@
+---
+- name: Running script on node-machine
+  hosts: all
+  tasks:
+    - name: Removing present script file
+      file:
+        path: /home/admin1/script.py
+        state: absent
+
+    - name: Removing present JSON file
+      file:
+        path: /home/admin1/os_comands.json
+        state: absent
+
+    - name: Copy script and JSON file to node-machine
+      copy:
+        src: "/home/admin1/project/{{ item }}"
+        dest: "/home/admin1/{{ item }}"
+        mode: 0755
+      with_items:
+        - script.py
+        - os_comands.json
+
+    - name: Now execute the script
+      command: python3 /home/admin1/script.py
+      register: command_output
+
+    - name: Display command output
+      debug:
+        var: command_output
+    - name: Fetch data_csv file from node-machine
+      fetch:
+        src: /home/admin1/data_csv
+        dest: /home/admin1/project/data_csv_{{ inventory_hostname }}_{{ ansible_date_time.minute }}
+        flat: yes
+
